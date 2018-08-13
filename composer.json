@@ -1,0 +1,22 @@
+{
+  "name": "earc/validator",
+  "description": "eArc - the explicit architecture framework - validator",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.1-rc",
+  "authors": [
+    {
+      "name": "Thomas Koudela",
+      "email": "thomas@koudela.net"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "symfony/polyfill-mbstring": "^1.9"
+  },
+  "autoload": {
+    "psr-4" : {
+      "eArc\\validator\\" : "src/"
+    }
+  }
+}
