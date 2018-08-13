@@ -16,8 +16,6 @@ return [
     'notIdentical' => function($a, $b) {return ($a !== $b);},
     'max' => function ($a, $b) {return ($a <= $b);},
     'min' => function ($a, $b) {return ($a >= $b);},
-    'maxLength' => function ($a, $b) {return (\mb_strlen($a) <= $b);},
-    'minLength' => function ($a, $b) {return (\mb_strlen($a) >= $b);},
     'smaller' => function ($a, $b) {return ($a < $b);},
     'greater' => function ($a, $b) {return ($a > $b);},
     'email' => function ($a) {return (false !== \filter_var($a, FILTER_VALIDATE_EMAIL));},

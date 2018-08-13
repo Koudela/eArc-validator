@@ -100,13 +100,13 @@ class ValidatorBase
                     $this->cntOr--;
                     $fastForwardOr = true;
                     if ($this->orFailureMessage) $this->orFailureMessage .= $this->messages->get('','OR', '') . ' ';
-                    $this->orFailureMessage .= ($call['message'] ?? $this->messages->get($item, $call['name'] . $this->messageKey, ...$call['args']));
+                    $this->orFailureMessage .= ($call['message'] ?? $this->messages->get($item, $call['name'] . ($call['key'] ?? $this->messageKey), ...$call['args']));
                     continue;
                 }
 
                 $this->errors[] =
                     ($this->hasOr ? $this->orFailureMessage . $this->messages->get('','OR', '') . ' ' : '') .
-                    ($call['message'] ?? $this->messages->get($item, $call['name'] . $this->messageKey, ...$call['args']));
+                    ($call['message'] ?? $this->messages->get($item, $call['name'] . ($call['key'] ?? $this->messageKey), ...$call['args']));
                 $this->reset();
                 return false;
             }
@@ -136,6 +136,18 @@ class ValidatorBase
         if ($cnt > 0)
         {
             $this->callStack[$cnt-1]['message'] = $message;
+        }
+
+        return $this;
+    }
+
+    public function addKey($messageKey): ValidatorBase
+    {
+        $cnt = count($this->callStack);
+
+        if ($cnt > 0)
+        {
+            $this->callStack[$cnt-1]['key'] = ':' . $messageKey;
         }
 
         return $this;
