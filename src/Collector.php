@@ -15,7 +15,6 @@ final class Collector {
     private $lastId = 0;
     private $callStack = [];
     private $errors = [];
-    private $errorMessages = [];
 
     public function getId(): int
     {
@@ -45,15 +44,13 @@ final class Collector {
         else $this->errors[$key] = $errors;
     }
 
-    public function getErrorMessages(Messages $messages): array
+    public function getErrorMessages(Messages $messages, string $prefix = null): array
     {
+        $errorMessages = [];
         foreach ($this->errors as $key => $err)
         {
-            if (!isset($errorMessages[$key]))
-            {
-                $this->errorMessages[$key] = $messages->generateErrorMessages($err);
-            }
+                $errorMessages[$key] = $messages->generateErrorMessages($err, $prefix);
         }
-        return $this->errorMessages;
+        return $errorMessages;
     }
 }

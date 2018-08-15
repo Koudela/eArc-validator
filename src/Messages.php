@@ -72,26 +72,41 @@ class Messages {
         $this->append($messages);
     }
 
-    protected function getOR(array $errors): string
+    protected function getOR(array $errors, $prefix): string
     {
         $messages = [];
         foreach ($errors as $key => $call)
         {
-            if ($key === 'OR') $messages[] = $this->getOR($call);
-            else $messages[] = $this->get($call);
+            if ($key === 'OR') $messages[] = $this->getOR($call, $prefix);
+            else $messages[] = $this->get($call, $prefix);
         }
         return implode($this->messages[$this->languageCodes[0]]['OR'], $messages);
     }
 
-    protected function get($call): string
+    protected function get($call, $prefix): string
     {
-        if ($call['with']) return $call['with'];
+        if ($call['with'])
+            return $call['with'];
 
-        if ($call['withKey']) $call['name'] = $call['withKey'];
+        if ($call['withKey'])
+            $call['name'] = $call['withKey'];
+
+        if (!$prefix) return $this->getMessage($call['name'], $call);
+
+        try {
+            return $this->getMessage($prefix . ':' . $call['name'], $call);
+        }
+        catch (\Exception $e)
+        {
+            return $this->getMessage($call['name'], $call);
+        }
+    }
+
+    protected  function getMessage($name, $call) {
 
         foreach ($this->languageCodes as $lang)
         {
-            if (isset($this->messages[$lang][$call['name']]))
+            if (isset($this->messages[$lang][$name]))
             {
                 $stringArgs = [];
 
@@ -105,19 +120,19 @@ class Messages {
                         $stringArgs[] = 'array';
                     else $stringArgs[] = $arg;
                 }
-                return $this->messages[$lang][$call['name']] . ($stringArgs ? ' ' : '') . implode(', ', $stringArgs);
+                return $this->messages[$lang][$name] . ($stringArgs ? ' ' : '') . implode(', ', $stringArgs);
             }
         }
-        throw new NoMessageException($call['name'] . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');
+        throw new NoMessageException($name . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');
     }
 
-    public function generateErrorMessages(array $errors): array
+    public function generateErrorMessages(array $errors, string $prefix = null): array
     {
         $messages = [];
         foreach ($errors as $key => $call)
         {
-            if ($key === 'OR') $messages[] = $this->getOR($call);
-            else $messages[] = $this->get($call);
+            if ($key === 'OR') $messages[] = $this->getOR($call, $prefix);
+            else $messages[] = $this->get($call, $prefix);
         }
         return $messages;
     }

@@ -89,8 +89,8 @@ class Validator {
         return (new Evaluator($this->callbacks, $this->collector, $value, $key, true))->getResult();
     }
 
-    public function getErrorMessages()
+    public function getErrorMessages(string $prefix = null): array
     {
-        return $this->collector->getErrorMessages($this->messages);
+        return $this->collector->getErrorMessages($this->messages, $prefix);
     }
 }
