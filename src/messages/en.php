@@ -28,7 +28,7 @@ return [
     'regex' => 'has to match the regular expression',
     'callback' => 'has to evaluate to true',
     'number' => 'has to be a valid integer',
-    'numeric' => 'has to a valid number',
+    'numeric' => 'has to be a valid number',
     'word' => 'has to be a word',
     'words' => 'has to be one or more words separated by blanks',
     'wordNumber' => 'can not contain special characters or blanks',

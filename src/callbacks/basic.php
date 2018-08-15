@@ -11,9 +11,7 @@
 return [
     'OR' => function () {},
     'equal' => function($a, $b) {return ($a == $b);},
-    'notEqual' => function($a, $b) {return ($a != $b);},
     'identical' => function($a, $b) {return ($a === $b);},
-    'notIdentical' => function($a, $b) {return ($a !== $b);},
     'max' => function ($a, $b) {return ($a <= $b);},
     'min' => function ($a, $b) {return ($a >= $b);},
     'smaller' => function ($a, $b) {return ($a < $b);},
@@ -25,19 +23,29 @@ return [
     'isRegex' => function ($a) {return (false !== \filter_var($a, FILTER_VALIDATE_REGEXP));},
     'regex' => function ($a, $b) {return (1 === \preg_match($b, $a));},
     'callback' => function ($a, $b) {return (true === $b($a));},
-    'number' => function ($a) {return (\is_int($a) || \preg_match('/^[0-9]+$/', $a));},
+    'number' => function ($a) {return (\is_int($a) || \preg_match('/^[0-9]*$/', $a));},
     'numeric' => function ($a) {return \is_numeric($a);},
-    'word' => function ($a) {return (1 === \preg_match('/^\w+$/', $a));},
-    'words' => function ($a) {return (1 === \preg_match('/^[\w\ ]+$/', $a));},
-    'wordNumber' => function ($a) {return (1 === \preg_match('/^[\w0-9]+$/', $a));},
-    'wordsNumber' => function ($a) {return (1 === \preg_match('/^[\w0-9\ ]+$/', $a));},
+    'word' => function ($a) {return (1 === \preg_match('/^\w*$/', $a));},
+    'words' => function ($a) {return (1 === \preg_match('/^[\w\ ]*$/', $a));},
+    'wordNumber' => function ($a) {return (1 === \preg_match('/^[\w0-9]*$/', $a));},
+    'wordsNumber' => function ($a) {return (1 === \preg_match('/^[\w0-9\ ]*$/', $a));},
     'blank' => function ($a) {return ('' === $a || null === $a);},
-    'notBlank' => function ($a) {return ('' !== $a && null !== $a);},
     'null' => function ($a) {return \is_null($a);},
-    'notNull' => function ($a) {return !\is_null($a);},
     'empty' => function ($a) {return empty($a);},
-    'notEmpty' => function ($a) {return !empty($a);},
-    'type' => function ($a, $b) {return (gettype($a) === $b);},
+    'type' => function ($a, $b) {return (\gettype($a) === $b);},
     'checked' => function ($a) {return ($a === 1 || $a === '1' || $a === 'on' || $a === true || $a === 'true');},
     'unchecked' => function ($a) {return (!isset($a) || $a === null || $a === 0 || $a === '0' || $a === 'off' || $a === false || $a === 'false' || $a === '');},
 ];
+/*
+
+not:smaller => min
+not:greater => max
+not:min => smaller
+not:max => greater
+//not:null => notNull
+//not:empty => notEmpty
+//not:blank => notBlank
+//not:equal => notEqual
+//not:identical => notIdentical
+
+ */

@@ -79,7 +79,7 @@ class Messages {
      * @return string
      * @throws NoMessageException
      */
-    public function get($evaluatedItem, $method, $predefinedItem = ''): string
+    public function get($method, $predefinedItem = ''): string
     {
         if (is_object($predefinedItem) || is_callable($predefinedItem))
         {
@@ -90,7 +90,7 @@ class Messages {
         {
             if (isset($this->messages[$lang][$method]))
             {
-                return $evaluatedItem . ' ' . $this->messages[$lang][$method] . ($predefinedItem === '' ? '' : ' ') . $predefinedItem;
+                return $this->messages[$lang][$method] . ($predefinedItem === '' ? '' : ' ') . $predefinedItem;
             }
         }
         throw new NoMessageException($method . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');

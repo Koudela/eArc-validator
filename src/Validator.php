@@ -12,6 +12,11 @@ namespace eArc\validator;
 
 /**
  * Class Validator
+ * @method NOT(|Validator $validator)
+ * @method OR(Validator ...$validators): Validator;
+ * @method AND(Validator ...$validators): Validator;
+ * @method with(string $message): Validator;
+ * @method withKey(string $messageKey): Validator;
  * @method equal($item): Validator;
  * @method notEqual($item): Validator;
  * @method identical($item): Validator;
@@ -46,4 +51,38 @@ namespace eArc\validator;
  * @method unchecked(): Validator;
  * @package eArc\validator
  */
-class Validator extends ValidatorBase {}
+class Validator {
+
+    protected $id;
+    protected $callbacks;
+    protected $collector;
+
+    public function __construct(Callbacks $callbacks, Collector $collector = null, $id = null)
+    {
+        $this->callbacks = $callbacks;
+        $this->collector = $collector ?? new Collector();
+        $this->id = $id ?? -1;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function __call($name, $args): Validator
+    {
+        $nextId = $this->collector->getId();
+        $this->collector->setCall($this->id, $nextId, $name, $args);
+        return new Validator($this->callbacks, $this->collector, $nextId);
+    }
+
+    public function validate($value, string $key = null): bool
+    {
+        return (new Evaluator($this->callbacks, $this->collector, $value, $key, false))->getResult();
+    }
+
+    public function assert($value, string $key = null): bool
+    {
+        return (new Evaluator($this->callbacks, $this->collector, $value, $key, true))->getResult();
+    }
+}
