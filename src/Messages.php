@@ -72,27 +72,53 @@ class Messages {
         $this->append($messages);
     }
 
-    /**
-     * @param $evaluatedItem
-     * @param $method
-     * @param $predefinedItem
-     * @return string
-     * @throws NoMessageException
-     */
-    public function get($method, $predefinedItem = ''): string
+    protected function getOR(array $errors): string
     {
-        if (is_object($predefinedItem) || is_callable($predefinedItem))
+        $messages = [];
+        foreach ($errors as $key => $call)
         {
-            $predefinedItem = '';
+            if ($key === 'OR') $messages[] = $this->getOR($call);
+            else $messages[] = $this->get($call);
         }
+        return implode($this->messages[$this->languageCodes[0]]['OR'], $messages);
+    }
+
+    protected function get($call): string
+    {
+        if ($call['with']) return $call['with'];
+
+        if ($call['withKey']) $call['name'] = $call['withKey'];
 
         foreach ($this->languageCodes as $lang)
         {
-            if (isset($this->messages[$lang][$method]))
+            if (isset($this->messages[$lang][$call['name']]))
             {
-                return $this->messages[$lang][$method] . ($predefinedItem === '' ? '' : ' ') . $predefinedItem;
+                $stringArgs = [];
+
+                foreach($call['args'] as $arg)
+                {
+                    if (is_object($arg))
+                        $stringArgs[] = 'object';
+                    else if (is_callable($arg))
+                        $stringArgs[] = 'callable';
+                    else if (is_array($arg))
+                        $stringArgs[] = 'array';
+                    else $stringArgs[] = $arg;
+                }
+                return $this->messages[$lang][$call['name']] . ($stringArgs ? ' ' : '') . implode(', ', $stringArgs);
             }
         }
-        throw new NoMessageException($method . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');
+        throw new NoMessageException($call['name'] . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');
+    }
+
+    public function generateErrorMessages(array $errors): array
+    {
+        $messages = [];
+        foreach ($errors as $key => $call)
+        {
+            if ($key === 'OR') $messages[] = $this->getOR($call);
+            else $messages[] = $this->get($call);
+        }
+        return $messages;
     }
 }

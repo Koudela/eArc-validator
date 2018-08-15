@@ -9,13 +9,13 @@
  */
 
 return [
-    'OR' => '*or*',
+    'OR' => ' *or* ',
     'equal' => 'has to be equal to',
     'notEqual' => 'must not be equal to',
     'identical' => 'has to be identical to',
     'notIdentical' => 'must not be identical to',
-    'max' => 'has to be smaller or equal than',
-    'min' => 'has to be greater or equal than',
+    'max' => 'has to be smaller or equal',
+    'min' => 'has to be greater or equal',
     'max:length' => 'can not be longer than',
     'min:length' => 'can not be shorter than',
     'smaller' => 'has to be smaller than',

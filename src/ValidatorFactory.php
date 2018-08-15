@@ -32,7 +32,7 @@ class ValidatorFactory {
     public function build($messageKey = null, string $validatorClassName = null): Validator
     {
         if (!$validatorClassName) $validatorClassName = $this->validatorClassName;
-        return new $validatorClassName($this->messages, $this->callbacks, $messageKey ?? $this->messageKey);
+        return new $validatorClassName($this->callbacks, $this->messages, $messageKey ?? $this->messageKey);
     }
 
     public static function make(Messages $messages = null, Callbacks $callbacks = null, $messageKey = null, string $validatorClassName = '\\eArc\\validator\\Validator'): Validator

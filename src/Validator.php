@@ -55,11 +55,14 @@ class Validator {
 
     protected $id;
     protected $callbacks;
+    protected $messages;
     protected $collector;
 
-    public function __construct(Callbacks $callbacks, Collector $collector = null, $id = null)
+
+    public function __construct(Callbacks $callbacks, Messages $messages, Collector $collector = null, $id = null)
     {
         $this->callbacks = $callbacks;
+        $this->messages = $messages;
         $this->collector = $collector ?? new Collector();
         $this->id = $id ?? -1;
     }
@@ -73,7 +76,7 @@ class Validator {
     {
         $nextId = $this->collector->getId();
         $this->collector->setCall($this->id, $nextId, $name, $args);
-        return new Validator($this->callbacks, $this->collector, $nextId);
+        return new Validator($this->callbacks, $this->messages, $this->collector, $nextId);
     }
 
     public function validate($value, string $key = null): bool
@@ -84,5 +87,10 @@ class Validator {
     public function assert($value, string $key = null): bool
     {
         return (new Evaluator($this->callbacks, $this->collector, $value, $key, true))->getResult();
+    }
+
+    public function getErrorMessages()
+    {
+        return $this->collector->getErrorMessages($this->messages);
     }
 }
