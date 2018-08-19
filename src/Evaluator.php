@@ -152,7 +152,6 @@ final class Evaluator
         if (!$bool && $this->verbosity > 0)
         {
             $call['isNot'] = $isNot;
-            $call['value'] = $this->value;
             $errors[] = $call;
         }
 

@@ -24,8 +24,8 @@ class Messages {
 
     public function __construct(array $languageCodes = ['en'], array $additionalMessages = [], Mappings $mappings = null)
     {
-        $this->load(__DIR__ . '/messages');
         $this->languageCodes = $languageCodes;
+        $this->load(__DIR__ . '/messages');
         $this->mappings = $mappings ?? new Mappings();
 
         foreach ($additionalMessages as $messages)
@@ -57,6 +57,7 @@ class Messages {
     protected function load(string $messageDir): void
     {
         $messages = [];
+
         foreach ($this->languageCodes as $lang)
         {
             $path = $messageDir . '/' . $lang . '.php';
@@ -105,7 +106,7 @@ class Messages {
             }
         }
         throw new NoMessageException(
-            $name . ' has no messages in [' . \implode(', ', $this->languageCodes) . ']'
+            '\'' . $name . '\' has no messages in [\'' . \implode('\', \'', $this->languageCodes) . '\']'
         );
     }
 
@@ -132,15 +133,13 @@ class Messages {
         return '[' . \implode(', ', $stringifiedArgs) . ']';
     }
 
-    protected function eval(string $name, $value, $args, bool $isNot): string
+    protected function eval(string $name, $args, bool $isNot): string
     {
-        if (\is_array($value)) $value = $this->arrayToString($value);
-
         foreach ($args as $key => $arg)
         {
             if (\is_array($arg)) $args[$key] = $this->arrayToString($args);
         }
-        return ($isNot ? 'NOT ' : '') . sprintf($this->get($name), $value, ...$args);
+        return ($isNot ? 'NOT ' : '') . sprintf($this->get($name), ...$args);
     }
 
     protected function evalCall($call, $prefix): string
@@ -151,14 +150,14 @@ class Messages {
         if ($call['withKey']) {
             $call['name'] = $call['withKey'];
         }
-        if (!$prefix) return $this->eval($call['name'], $call['value'], $call['args'], $call['isNot']);
+        if (!$prefix) return $this->eval($call['name'], $call['args'], $call['isNot']);
 
         try {
-            return $this->eval($prefix . ':' . $call['name'], $call['value'], $call['args'], $call['isNot']);
+            return $this->eval($prefix . ':' . $call['name'], $call['args'], $call['isNot']);
         }
         catch (\Exception $e)
         {
-            return $this->eval($call['name'], $call['value'], $call['args'], $call['isNot']);
+            return $this->eval($call['name'], $call['args'], $call['isNot']);
         }
     }
 

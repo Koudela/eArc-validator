@@ -29,8 +29,8 @@ class ValidatorFactory {
     )
     {
         $this->mappings = $mappings ?? new Mappings();
-        $this->callbacks = $callbacks ?? new Callbacks(null, $mappings);
-        $this->messages = $messages ?? new Messages(null, null, $mappings);
+        $this->callbacks = $callbacks ?? new Callbacks([], $mappings);
+        $this->messages = $messages ?? new Messages(['en'], [], $mappings);
         $this->validatorClassName = $validatorClassName;
     }
 
@@ -62,7 +62,9 @@ class ValidatorFactory {
             $callbacks->getMappings()->merge($mappings);
             $messages->getMappings()->merge($mappings);
         }
-        return new ($validatorClassName ?? $this->validatorClassName)(
+        if (!$validatorClassName) $validatorClassName = $this->validatorClassName;
+
+        return new $validatorClassName(
             $callbacks ?? $this->callbacks,
             $messages ?? $this->messages
         );
@@ -85,8 +87,8 @@ class ValidatorFactory {
             }
         }
         return new $validatorClassName(
-            $callbacks ?? new Callbacks(null, $mappings),
-            $messages ?? new Messages(null, null, $mappings)
+            $callbacks ?? new Callbacks([], $mappings),
+            $messages ?? new Messages(['en'], [], $mappings)
         );
     }
 }
