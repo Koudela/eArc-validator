@@ -46,10 +46,6 @@ class Callbacks {
         array_replace($this->callbacks, include($callbackPath));
     }
 
-    /**
-     * @param string $name
-     * @return \Closure
-     */
     public function get(string $name): \Closure
     {
         $name = $this->mappings->get($name);

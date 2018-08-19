@@ -42,10 +42,6 @@ class Mappings {
         array_replace($this->mappings, include($mappingPath));
     }
 
-    /**
-     * @param string $name
-     * @return string
-     */
     public function get(string $name): string
     {
         return isset($this->mappings[$name]) ? $this->mappings[$name] : $name;

@@ -47,6 +47,7 @@ final class Collector {
     public function getErrorMessages(Messages $messages, string $prefix = null): array
     {
         $errorMessages = [];
+
         foreach ($this->errors as $key => $err)
         {
                 $errorMessages[$key] = $messages->generateErrorMessages($err, $prefix);

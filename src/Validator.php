@@ -79,14 +79,26 @@ class Validator {
         return new Validator($this->callbacks, $this->messages, $this->collector, $nextId);
     }
 
-    public function validate($value, string $key = null): bool
+    public function check($value, string $key = null, $throwOnResultIsFalse = false): bool
     {
-        return (new Evaluator($this->callbacks, $this->collector, $value, $key, false))->getResult();
+        return $this->evaluate($value, $key, 0, $throwOnResultIsFalse);
     }
 
-    public function assert($value, string $key = null): bool
+    public function validate($value, string $key = null, $throwOnResultIsFalse = false): bool
     {
-        return (new Evaluator($this->callbacks, $this->collector, $value, $key, true))->getResult();
+        return $this->evaluate($value, $key, 1, $throwOnResultIsFalse);
+    }
+
+    public function assert($value, string $key = null, $throwOnResultIsFalse = false): bool
+    {
+        return $this->evaluate($value, $key, 2, $throwOnResultIsFalse);
+    }
+
+    private function evaluate($value, string $key = null, $verbosity = 1, $throwOnResultIsFalse = false): bool
+    {
+        return (
+            new Evaluator($this->callbacks, $this->collector, $value, $key, $verbosity, $throwOnResultIsFalse)
+        )->getResult();
     }
 
     public function getErrorMessages(string $prefix = null): array

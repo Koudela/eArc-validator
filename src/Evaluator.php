@@ -20,13 +20,14 @@ final class Evaluator
     private $callStack;
     private $value;
     private $result;
+    private $verbosity;
 
-    public function __construct(Callbacks $callbacks, Collector $collector, $value, string $key = null, $throwOnResultIsFalse = false)
+    public function __construct(Callbacks $callbacks, Collector $collector, $value, string $key = null, $verbosity = 0, $throwOnResultIsFalse = false)
     {
         $this->callbacks = $callbacks;
         $this->callStack = $collector->getCallStack();
         $this->value = $value;
-        $this->key = $key;
+        $this->verbosity = $verbosity;
 
         $errors = [];
         end($this->callStack);
@@ -58,6 +59,8 @@ final class Evaluator
 
     private function evalRewindStack(array &$errors, array $rewindStack, bool $isNot): bool
     {
+        $returnBool = true;
+
         while ($call = array_pop($rewindStack))
         {
             switch ($call['name'])
@@ -78,9 +81,13 @@ final class Evaluator
                     break;
                 default: $bool = $this->evalCallback($errors, $call, $isNot);
             }
-            if (!$bool) return false;
+            if (!$bool)
+            {
+                if ($this->verbosity < 2) return false;
+                $returnBool = false;
+            }
         }
-        return true;
+        return $returnBool;
     }
 
     private function preEvalOR(array &$errors, array $args, bool $isNot): bool
@@ -111,12 +118,18 @@ final class Evaluator
 
     private function evalAND(array &$errors, array $args, bool $isNot): bool
     {
+        $returnBool = true;
+
         foreach ($args as $arg)
         {
             $bool = $this->startRewind($errors, $this->callStack[$this->getKey($arg)], $isNot);
-            if (!$bool) return false;
+            if (!$bool)
+            {
+                if ($this->verbosity < 2) return false;
+                $returnBool = false;
+            }
         }
-        return true;
+        return $returnBool;
     }
 
     private function evalCallback(array &$errors, array $call, bool $isNot): bool
@@ -136,7 +149,7 @@ final class Evaluator
             $bool = !$this->callbacks->get($call['name'])($this->value, ...$call['args']);
         }
 
-        if (!$bool)
+        if (!$bool && $this->verbosity > 0)
         {
             $call['isNot'] = $isNot;
             $errors[] = $call;
