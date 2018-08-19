@@ -75,8 +75,29 @@ final class Evaluator
                         $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call['args'][0])], $isNot);
                     }
                     break;
+                case 'WHEN':
+                    $verbosity = $this->verbosity;
+                    $this->verbosity = 0;
+                    $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call['args'][0])], $isNot);
+                    $this->verbosity = $verbosity;
+                    if ($bool) {
+                        $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call['args'][1])], $isNot);
+                    } else if (isset($call['args'][2])) {
+                        $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call['args'][2])], $isNot);
+                    } else {
+                        $bool = true;
+                    }
+                    break;
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 'NoneOf':
+                    // NoneOf(...) -> NOT(OR(...))
+                    $isNot = !$isNot;
+                case 'OneOf':
+                    // OneOf() -> OR(a, b, c)
                 case 'OR': $bool = $this->preEvalOR($errors, $call['args'], $isNot);
                     break;
+                case 'AllOf':
+                    // AllOf(...) -> AND(...)
                 case 'AND': $bool = $this->preEvalAND($errors, $call['args'], $isNot);
                     break;
                 default: $bool = $this->evalCallback($errors, $call, $isNot);

@@ -15,6 +15,10 @@ namespace eArc\validator;
  * @method NOT(|Validator $validator)
  * @method OR(Validator ...$validators): Validator;
  * @method AND(Validator ...$validators): Validator;
+ * @method WHEN(Validator $validator, Validator $validator, ?Validator $validator): Validator;
+ * @method NoneOf(Validator ...$validators): Validator;
+ * @method AllOf(Validator ...$validators): Validator;
+ * @method OneOf(Validator ...$validators): Validator;
  * @method with(string $message): Validator;
  * @method withKey(string $messageKey): Validator;
  * @method equal($item): Validator;
