@@ -28,9 +28,9 @@ class ValidatorFactory {
         string $validatorClassName = '\\eArc\\validator\\Validator'
     )
     {
-        $this->callbacks = $callbacks ?? new Callbacks();
-        $this->messages = $messages ?? new Messages();
         $this->mappings = $mappings ?? new Mappings();
+        $this->callbacks = $callbacks ?? new Callbacks(null, $mappings);
+        $this->messages = $messages ?? new Messages(null, null, $mappings);
         $this->validatorClassName = $validatorClassName;
     }
 
@@ -56,10 +56,15 @@ class ValidatorFactory {
         string $validatorClassName = null
     ): Validator
     {
+        $callbacks = $callbacks ?? $this->callbacks;
+        $messages = $messages ?? $this->messages;
+        if ($mappings) {
+            $callbacks->getMappings()->merge($mappings);
+            $messages->getMappings()->merge($mappings);
+        }
         return new ($validatorClassName ?? $this->validatorClassName)(
             $callbacks ?? $this->callbacks,
-            $messages ?? $this->messages,
-            $mappings ?? $this->mappings
+            $messages ?? $this->messages
         );
     }
 
@@ -70,10 +75,18 @@ class ValidatorFactory {
         string $validatorClassName = '\\eArc\\validator\\Validator'
     ): Validator
     {
+        if (!$mappings) $mappings = new Mappings();
+        else {
+            if ($callbacks) {
+                $callbacks->getMappings()->merge($mappings);
+            }
+            if ($messages) {
+                $messages->getMappings()->merge($mappings);
+            }
+        }
         return new $validatorClassName(
-            $callbacks ?? new Callbacks(),
-            $messages ?? new Messages(),
-            $mappings ?? new Mappings()
+            $callbacks ?? new Callbacks(null, $mappings),
+            $messages ?? new Messages(null, null, $mappings)
         );
     }
 }

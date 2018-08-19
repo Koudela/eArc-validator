@@ -21,29 +21,50 @@ class Callbacks {
     protected $callbacks;
     protected $mappings;
 
-    public function __construct($additionalCallbacks = null, Mappings $mappings = null)
+    public function __construct(array $additionalCallbacks = [], Mappings $mappings = null)
     {
         $this->callbacks = include(__DIR__ . '/callbacks/basic.php');
         $this->mappings = $mappings ?? new Mappings();
 
-        if ($additionalCallbacks)
+        foreach ($additionalCallbacks as $callbacks)
         {
-            if (is_string($additionalCallbacks)) {
-                $this->load($additionalCallbacks);
-            } else {
-                $this->append($additionalCallbacks);
-            }
+            $this->merge($callbacks);
         }
     }
 
-    public function append(array $callbacks)
+    protected function append(array $callbacks): void
     {
-        array_replace($this->callbacks, $callbacks);
+        \array_replace($this->callbacks, $callbacks);
     }
 
-    public function load(string $callbackPath): void
+    protected function load(string $callbackPath): void
     {
-        array_replace($this->callbacks, include($callbackPath));
+        \array_replace($this->callbacks, include($callbackPath));
+    }
+
+    public function merge($callbacks): void
+    {
+        if (\is_string($callbacks)) {
+            $this->load($callbacks);
+            return;
+        }
+        if (\is_array($callbacks)) {
+            $this->append($callbacks);
+            return;
+        }
+        if ($callbacks instanceof Callbacks) {
+            $this->append($callbacks->getCallbacks());
+        }
+    }
+
+    public function getCallbacks(): array
+    {
+        return $this->callbacks;
+    }
+
+    public function getMappings(): Mappings
+    {
+        return $this->mappings;
     }
 
     public function get(string $name): \Closure

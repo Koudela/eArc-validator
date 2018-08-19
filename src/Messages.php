@@ -22,19 +22,15 @@ class Messages {
     protected $messages = [];
     protected $mappings;
 
-    public function __construct(array $languageCodes = ['en'], $additionalMessages = null, Mappings $mappings = null)
+    public function __construct(array $languageCodes = ['en'], array $additionalMessages = [], Mappings $mappings = null)
     {
         $this->load(__DIR__ . '/messages');
         $this->languageCodes = $languageCodes;
         $this->mappings = $mappings ?? new Mappings();
 
-        if ($additionalMessages)
+        foreach ($additionalMessages as $messages)
         {
-            if (is_string($additionalMessages)) {
-                $this->load($additionalMessages);
-            } else {
-                $this->append($additionalMessages);
-            }
+            $this->merge($messages);
         }
     }
 
@@ -43,7 +39,7 @@ class Messages {
         $this->languageCodes = $languageCodes;
     }
 
-    public function append(array $messages)
+    protected function append(array $messages): void
     {
         foreach ($this->languageCodes as $lang)
         {
@@ -54,12 +50,11 @@ class Messages {
                 $this->messages[$lang] = $messages[$lang];
                 continue;
             }
-
-            array_replace($this->messages[$lang], $messages[$lang]);
+            \array_replace($this->messages[$lang], $messages[$lang]);
         }
     }
 
-    public function load(string $messageDir): void
+    protected function load(string $messageDir): void
     {
         $messages = [];
         foreach ($this->languageCodes as $lang)
@@ -68,64 +63,114 @@ class Messages {
 
             if (!is_file($path)) continue;
 
-            $messages[$lang] = include($messageDir . '/' . $lang . '.php');
+            $messages[$lang] = include($path);
         }
         $this->append($messages);
     }
 
-    protected function getOR(array $errors, $prefix): string
+    public function merge($messages): void
     {
-        $messages = [];
-        foreach ($errors as $key => $call)
-        {
-            if ($key === 'OR') $messages[] = $this->getOR($call, $prefix);
-            else $messages[] = $this->get($call, $prefix);
+        if (is_string($messages)) {
+            $this->load($messages);
+            return;
         }
-        return implode($this->messages[$this->languageCodes[0]]['OR'], $messages);
-    }
-
-    protected function get($call, $prefix): string
-    {
-        if ($call['with'])
-            return $call['with'];
-
-        if ($call['withKey'])
-            $call['name'] = $call['withKey'];
-
-        if (!$prefix) return $this->getMessage($call['name'], $call);
-
-        try {
-            return $this->getMessage($prefix . ':' . $call['name'], $call);
+        if (is_array($messages)) {
+            $this->append($messages);
+            return;
         }
-        catch (\Exception $e)
-        {
-            return $this->getMessage($call['name'], $call);
+        if ($messages instanceof Messages) {
+            $this->append($messages->getMessages());
         }
     }
 
-    protected  function getMessage($name, $call) {
+    public function getMessages(): array
+    {
+        return $this->messages;
+    }
+
+    public function getMappings(): Mappings
+    {
+        return $this->mappings;
+    }
+
+    public function get(string $name): string
+    {
         $name = $this->mappings->get($name);
 
         foreach ($this->languageCodes as $lang)
         {
             if (isset($this->messages[$lang][$name]))
             {
-                $stringArgs = [];
-
-                foreach($call['args'] as $arg)
-                {
-                    if (is_object($arg))
-                        $stringArgs[] = 'object';
-                    else if (is_callable($arg))
-                        $stringArgs[] = 'callable';
-                    else if (is_array($arg))
-                        $stringArgs[] = 'array';
-                    else $stringArgs[] = $arg;
-                }
-                return $this->messages[$lang][$name] . ($stringArgs ? ' ' : '') . implode(', ', $stringArgs);
+                return $this->messages[$lang][$name];
             }
         }
-        throw new NoMessageException($name . ' has no messages in [' . implode(', ', $this->languageCodes) . ']');
+        throw new NoMessageException(
+            $name . ' has no messages in [' . \implode(', ', $this->languageCodes) . ']'
+        );
+    }
+
+    protected function arrayToString(array $args): string
+    {
+        $stringifiedArgs = [];
+
+        foreach($args as $arg)
+        {
+            if (\is_array($arg)) {
+                $stringifiedArgs[] = $this->arrayToString($args);
+                continue;
+            }
+            if (!\is_scalar($arg)) {
+                $stringifiedArgs[] = (string) $arg;
+                continue;
+            }
+            if (\is_bool($arg)) {
+                $stringifiedArgs[] = $arg ? 'true' : 'false';
+                continue;
+            }
+            $stringifiedArgs[] = $arg;
+        }
+        return '[' . \implode(', ', $stringifiedArgs) . ']';
+    }
+
+    protected function eval(string $name, $value, $args, bool $isNot): string
+    {
+        if (\is_array($value)) $value = $this->arrayToString($value);
+
+        foreach ($args as $key => $arg)
+        {
+            if (\is_array($arg)) $args[$key] = $this->arrayToString($args);
+        }
+        return ($isNot ? 'NOT ' : '') . sprintf($this->get($name), $value, ...$args);
+    }
+
+    protected function evalCall($call, $prefix): string
+    {
+        if ($call['with']) {
+            return $call['with'];
+        }
+        if ($call['withKey']) {
+            $call['name'] = $call['withKey'];
+        }
+        if (!$prefix) return $this->eval($call['name'], $call['value'], $call['args'], $call['isNot']);
+
+        try {
+            return $this->eval($prefix . ':' . $call['name'], $call['value'], $call['args'], $call['isNot']);
+        }
+        catch (\Exception $e)
+        {
+            return $this->eval($call['name'], $call['value'], $call['args'], $call['isNot']);
+        }
+    }
+
+    protected function evalOR(array $errors, $prefix): string
+    {
+        $messages = [];
+        foreach ($errors as $key => $call)
+        {
+            if ($key === 'OR') $messages[] = $this->evalOR($call, $prefix);
+            else $messages[] = $this->evalCall($call, $prefix);
+        }
+        return \implode($this->messages[$this->languageCodes[0]]['OR'], $messages);
     }
 
     public function generateErrorMessages(array $errors, string $prefix = null): array
@@ -133,8 +178,8 @@ class Messages {
         $messages = [];
         foreach ($errors as $key => $call)
         {
-            if ($key === 'OR') $messages[] = $this->getOR($call, $prefix);
-            else $messages[] = $this->get($call, $prefix);
+            if ($key === 'OR') $messages[] = $this->evalOR($call, $prefix);
+            else $messages[] = $this->evalCall($call, $prefix);
         }
         return $messages;
     }

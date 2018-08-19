@@ -18,28 +18,44 @@ class Mappings {
 
     protected $mappings;
 
-    public function __construct($additionalMappings = null)
+    public function __construct(array $additionalMappings = [])
     {
         $this->mappings = include(__DIR__ . '/mappings/map.php');
 
-        if ($additionalMappings)
+        foreach ($additionalMappings as $mapping)
         {
-            if (is_string($additionalMappings)) {
-                $this->load($additionalMappings);
-            } else {
-                $this->append($additionalMappings);
-            }
+            $this->merge($mapping);
         }
     }
 
-    public function append(array $mappings)
+    protected function append(array $mappings): void
     {
-        array_replace($this->mappings, $mappings);
+        \array_replace($this->mappings, $mappings);
     }
 
-    public function load(string $mappingPath): void
+    protected function load(string $mappingPath): void
     {
-        array_replace($this->mappings, include($mappingPath));
+        \array_replace($this->mappings, include($mappingPath));
+    }
+
+    public function merge($mappings): void
+    {
+        if (\is_string($mappings)) {
+            $this->load($mappings);
+            return;
+        }
+        if (\is_array($mappings)) {
+            $this->append($mappings);
+            return;
+        }
+        if ($mappings instanceof Mappings) {
+            $this->append($mappings->getMappings());
+        }
+    }
+
+    public function getMappings(): array
+    {
+        return $this->mappings;
     }
 
     public function get(string $name): string
