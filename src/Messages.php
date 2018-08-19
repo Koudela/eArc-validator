@@ -20,12 +20,13 @@ class Messages {
 
     protected $languageCodes = [];
     protected $messages = [];
+    protected $mappings;
 
-    public function __construct(array $languageCodes = ['en'], $additionalMessages = null)
+    public function __construct(array $languageCodes = ['en'], $additionalMessages = null, Mappings $mappings = null)
     {
-        $this->languageCodes = $languageCodes;
-
         $this->load(__DIR__ . '/messages');
+        $this->languageCodes = $languageCodes;
+        $this->mappings = $mappings ?? new Mappings();
 
         if ($additionalMessages)
         {
@@ -103,6 +104,7 @@ class Messages {
     }
 
     protected  function getMessage($name, $call) {
+        $name = $this->mappings->get($name);
 
         foreach ($this->languageCodes as $lang)
         {

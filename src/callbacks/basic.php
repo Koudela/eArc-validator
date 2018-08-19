@@ -36,16 +36,3 @@ return [
     'checked' => function ($a) {return ($a === 1 || $a === '1' || $a === 'on' || $a === true || $a === 'true');},
     'unchecked' => function ($a) {return (!isset($a) || $a === null || $a === 0 || $a === '0' || $a === 'off' || $a === false || $a === 'false' || $a === '');},
 ];
-/*
-
-not:smaller => min
-not:greater => max
-not:min => smaller
-not:max => greater
-//not:null => notNull
-//not:empty => notEmpty
-//not:blank => notBlank
-//not:equal => notEqual
-//not:identical => notIdentical
-
- */

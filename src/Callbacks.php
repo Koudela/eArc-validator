@@ -19,10 +19,12 @@ use eArc\validator\exceptions\NoCallbackException;
 class Callbacks {
 
     protected $callbacks;
+    protected $mappings;
 
-    public function __construct($additionalCallbacks = null)
+    public function __construct($additionalCallbacks = null, Mappings $mappings = null)
     {
         $this->callbacks = include(__DIR__ . '/callbacks/basic.php');
+        $this->mappings = $mappings ?? new Mappings();
 
         if ($additionalCallbacks)
         {
@@ -50,11 +52,12 @@ class Callbacks {
      */
     public function get(string $name): \Closure
     {
+        $name = $this->mappings->get($name);
+
         if (!isset($this->callbacks[$name]))
         {
             throw new NoCallbackException($name . ' is not a valid ' . Callbacks::class . ' function');
         }
-
         return $this->callbacks[$name];
     }
 }
