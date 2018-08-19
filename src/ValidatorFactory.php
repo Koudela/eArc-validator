@@ -16,29 +16,40 @@ namespace eArc\validator;
  */
 class ValidatorFactory {
 
-    protected $messages;
     protected $callbacks;
+    protected $messages;
     protected $validatorClassName;
-    protected $messageKey;
 
-    public function __construct(Messages $messages, Callbacks $callbacks, $messageKey = null, string $validatorClassName = '\\eArc\\validator\\Validator')
+    public function __construct(Callbacks $callbacks = null, Messages $messages = null, string $validatorClassName = '\\eArc\\validator\\Validator')
     {
-        $this->messages = $messages;
-        $this->callbacks = $callbacks;
+        $this->callbacks = $callbacks ? $callbacks : new Callbacks();
+        $this->messages = $messages ? $messages : new Messages();
         $this->validatorClassName = $validatorClassName;
-        $this->messageKey = $messageKey;
     }
 
-    public function build($messageKey = null, string $validatorClassName = null): Validator
+    public function getCallbacks(): Callbacks
     {
-        if (!$validatorClassName) $validatorClassName = $this->validatorClassName;
-        return new $validatorClassName($this->callbacks, $this->messages, $messageKey ?? $this->messageKey);
+        return $this->callbacks;
     }
 
-    public static function make(Messages $messages = null, Callbacks $callbacks = null, $messageKey = null, string $validatorClassName = '\\eArc\\validator\\Validator'): Validator
+    public function getMessages(): Messages
     {
-        if (!$messages) $messages = new Messages();
-        if (!$callbacks) $callbacks = new Callbacks();
-        return new $validatorClassName($messages, $callbacks, $messageKey);
+        return $this->messages;
+    }
+
+    public function build( Callbacks $callbacks = null, Messages $messages = null, string $validatorClassName = null): Validator
+    {
+        return new ($validatorClassName ? $validatorClassName : $this->validatorClassName)(
+            $callbacks ? $callbacks : $this->callbacks,
+            $messages ? $messages : $this->messages
+        );
+    }
+
+    public static function make(Callbacks $callbacks = null, Messages $messages = null, string $validatorClassName = '\\eArc\\validator\\Validator'): Validator
+    {
+        return new $validatorClassName(
+            $callbacks ? $callbacks : new Callbacks(),
+            $messages ? $messages : new Messages()
+        );
     }
 }
