@@ -1,19 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
  *
  * @package earc/validator
  * @link https://github.com/Koudela/earc-validator/
- * @copyright Copyright (c) 2018 Thomas Koudela
+ * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
 
-namespace eArc\validator\exceptions;
+namespace eArc\Validator\Exceptions;
+
+use RuntimeException;
 
 /**
  * No callback function can be found or is available
- *
- * Class NoCallbackException
- * @package eArc\validator\exceptions
  */
-class NoCallbackException extends \RuntimeException {}
+class NoCallbackException extends RuntimeException {}

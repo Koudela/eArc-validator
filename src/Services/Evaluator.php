@@ -4,26 +4,37 @@
  *
  * @package earc/validator
  * @link https://github.com/Koudela/earc-validator/
- * @copyright Copyright (c) 2018 Thomas Koudela
+ * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
 
-namespace eArc\validator;
+namespace eArc\Validator\Services;
 
-use eArc\validator\exceptions\EvaluationException;
-use eArc\validator\exceptions\NoCallbackException;
-use eArc\validator\exceptions\AssertException;
+use eArc\Validator\Collections\Collector;
+use eArc\Validator\Exceptions\EvaluationException;
+use eArc\Validator\Exceptions\NoCallbackException;
+use eArc\Validator\Exceptions\AssertException;
+use eArc\Validator\Collections\Callbacks;
+use eArc\Validator\Validator;
 
-final class Evaluator
+class Evaluator
 {
-    private $callbacks;
-    private $callStack;
-    private $value;
-    private $result;
-    private $verbosity;
+    /** @var Validator */
+    protected $validator;
+    /** @var Callbacks */
+    protected $callbacks;
+    /** @var array */
+    protected $callStack;
+    /** @var mixed */
+    protected $value;
+    /** @var bool */
+    protected $result;
+    /** @var int */
+    protected $verbosity;
 
-    public function __construct(Callbacks $callbacks, Collector $collector, $value, string $key = null, $verbosity = 0, $throwOnResultIsFalse = false)
+    public function __construct(Validator $validator, Callbacks $callbacks, Collector $collector, $value, string $key = null, $verbosity = 0, $throwOnResultIsFalse = false)
     {
+        $this->validator = $validator;
         $this->callbacks = $callbacks;
         $this->callStack = $collector->getCallStack();
         $this->value = $value;
@@ -35,7 +46,9 @@ final class Evaluator
 
         $collector->setErrors($errors, $key);
 
-        if ($throwOnResultIsFalse && !$this->result) throw new AssertException();
+        if ($throwOnResultIsFalse && !$this->result) {
+            throw new AssertException(var_export($validator->getErrorMessages()));
+        }
    }
 
     private function startRewind(array &$errors, array $call, bool $isNot): bool
@@ -157,7 +170,8 @@ final class Evaluator
     {
         try
         {
-            $bool = $this->callbacks->get(($isNot ? 'not:' : '') . $call['name'])($this->value, ...$call['args']);
+            $callbackName = ($isNot ? 'not:' : '').$call['name'];
+            $bool = $this->callbacks->get($callbackName)($this->value, ...$call['args']);
             if (!$bool && $isNot) {
                 $call['name'] = 'not:' . $call['name'];
                 $isNot = false;
@@ -165,9 +179,12 @@ final class Evaluator
         }
         catch (NoCallbackException $e)
         {
-            if (!$isNot) throw $e;
+            if (!$isNot) {
+                throw $e;
+            }
 
-            $bool = !$this->callbacks->get($call['name'])($this->value, ...$call['args']);
+            $callbackName = $call['name'];
+            $bool = !$this->callbacks->get($callbackName)($this->value, ...$call['args']);
         }
 
         if (!$bool && $this->verbosity > 0)

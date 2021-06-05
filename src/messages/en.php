@@ -4,12 +4,12 @@
  *
  * @package earc/validator
  * @link https://github.com/Koudela/earc-validator/
- * @copyright Copyright (c) 2018 Thomas Koudela
+ * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
 
 return [
-    'OR' => ' *or* ',
+    #'OR' => ' *or* ',
     'equal' => 'has to be equal to %s',
     'notEqual' => 'must not be equal to %s',
     'identical' => 'has to be identical to %s',
