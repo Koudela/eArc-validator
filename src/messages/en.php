@@ -9,7 +9,7 @@
  */
 
 return [
-    #'OR' => ' *or* ',
+    'OR' => ' *or* ',
     'equal' => 'has to be equal to %s',
     'notEqual' => 'must not be equal to %s',
     'identical' => 'has to be identical to %s',

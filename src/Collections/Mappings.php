@@ -13,7 +13,7 @@ namespace eArc\Validator\Collections;
 class Mappings
 {
     /** @var array<string, string> */
-    protected $mappings;
+    protected array $mappings;
 
     /**
      * @param array<string, string> $mappings

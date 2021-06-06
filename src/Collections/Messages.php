@@ -10,14 +10,12 @@
 namespace eArc\Validator\Collections;
 
 use eArc\Validator\Exceptions\NoMessageException;
-use Exception;
 
 class Messages
 {
     /** @var array<string, array<string, string>> */
-    protected $messages = [];
-    /** @var Mappings */
-    protected $mappings;
+    protected array $messages = [];
+    protected Mappings $mappings;
 
     public function __construct(array $messages, Mappings $mappings)
     {
@@ -39,91 +37,16 @@ class Messages
             $languageCodes[] = $key;
         }
 
+        if (substr($name, 0, 4) === 'not:') {
+            return 'NOT( '.$this->get(substr($name, 4)).' )';
+        }
+
         throw new NoMessageException(sprintf(
-            'No message %s defined for languages [%s]',
+            '{3428bf7b-3219-414a-9987-919a600342c9} No message %s defined for languages [%s]',
             $name,
             implode(', ', $languageCodes)
         ));
     }
 
-    public function generateErrorMessages(array $errors, string $prefix = null): array
-    {
-        $messages = [];
 
-        foreach ($errors as $key => $call) {
-            if ($key === 'OR') {
-                $messages[] = $this->evalOR($call, $prefix);
-            } else {
-                $messages[] = $this->evalCall($call, $prefix);
-            }
-        }
-
-        return $messages;
-    }
-
-    protected function arrayToString(array $args): string
-    {
-        $transformedArgs = [];
-
-        foreach($args as $arg) {
-            if (is_array($arg)) {
-                $transformedArgs[] = $this->arrayToString($args);
-            } elseif (!is_scalar($arg)) {
-                $transformedArgs[] = (string) $arg;
-            } elseif (is_bool($arg)) {
-                $transformedArgs[] = $arg ? 'true' : 'false';
-            } else {
-                $transformedArgs[] = $arg;
-            }
-        }
-
-        return '[' . implode(', ', $transformedArgs) . ']';
-    }
-
-    protected function eval(string $name, $args, bool $isNot): string
-    {
-        foreach ($args as $key => $arg) {
-            if (is_array($arg)) {
-                $args[$key] = $this->arrayToString($args);
-            }
-        }
-
-        return ($isNot ? 'NOT ' : '').sprintf($this->get($name), ...$args);
-    }
-
-    protected function evalCall($call, $prefix): string
-    {
-        if (array_key_exists('with', $call) && $call['with']) {
-            return $call['with'];
-        }
-
-        if (array_key_exists('withKey', $call) && $call['withKey']) {
-            $call['name'] = $call['withKey'];
-        }
-
-        if (!$prefix) {
-            return $this->eval($call['name'], $call['args'], $call['isNot']);
-        }
-
-        try {
-            return $this->eval($prefix . ':' . $call['name'], $call['args'], $call['isNot']);
-        } catch (Exception $e) {
-            return $this->eval($call['name'], $call['args'], $call['isNot']);
-        }
-    }
-
-    protected function evalOR(array $errors, $prefix): string
-    {
-        $messages = [];
-
-        foreach ($errors as $key => $call) {
-            if ($key === 'OR') {
-                $messages[] = $this->evalOR($call, $prefix);
-            } else {
-                $messages[] = $this->evalCall($call, $prefix);
-            }
-        }
-
-        return implode($this->get('OR'), $messages);
-    }
 }

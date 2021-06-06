@@ -15,7 +15,7 @@ use eArc\Validator\Collections\Mappings;
 
 /**
  * syntax methods:
- * @method Validator NOT(|Validator $validator)
+ * @method Validator NOT(Validator $validator = null)
  * @method Validator OR(Validator ...$validators)
  * @method Validator AND(Validator ...$validators)
  * @method Validator WHEN(Validator $validator, Validator $validator, ?Validator $validator)
@@ -65,10 +65,10 @@ use eArc\Validator\Collections\Mappings;
  */
 class Validator extends AbstractValidator
 {
-    public static function getCallbacks(Mappings $mappings): Callbacks
+    public static function getCallbacks(): Callbacks
     {
         $methods = [
-#            'OR' => function () {},
+            'OR' => function () {},
             'equal' => function($a, $b) {return ($a == $b);},
             'identical' => function($a, $b) {return ($a === $b);},
             'max' => function ($a, $b) {return ($a <= $b);},
@@ -97,7 +97,7 @@ class Validator extends AbstractValidator
             'callback' => function ($a, $b) {return (true === $b($a));},
         ];
 
-        return new Callbacks($methods, $mappings);
+        return new Callbacks($methods);
     }
 
     public static function getMappings(): Mappings
@@ -110,7 +110,7 @@ class Validator extends AbstractValidator
 
             'notNull' => 'not:null',
             'not:notNull' => 'null',
-            'notEmpty' => 'not:Empty',
+            'notEmpty' => 'not:empty',
             'not:notEmpty' => 'empty',
             'notBlank' => 'not:blank',
             'not:notBlank' => 'blank',

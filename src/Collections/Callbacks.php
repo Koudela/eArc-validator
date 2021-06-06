@@ -15,22 +15,19 @@ use eArc\Validator\Exceptions\NoCallbackException;
 
 class Callbacks
 {
-    /** @var Mappings */
-    protected $mappings;
-    /** @var Closure[] */
-    protected $callbacks;
+    /** @var array<string, Closure> */
+    protected array $callbacks;
 
     /**
-     * @param array<int|string, Closure> $callbacks
+     * @param array<string, Closure> $callbacks
      */
-    public function __construct(array $callbacks, Mappings $mappings)
+    public function __construct(array $callbacks)
     {
         $this->callbacks = $callbacks;
-        $this->mappings = $mappings;
     }
 
     /**
-     * @return Closure[]
+     * @return array<string, Closure>
      */
     public function getCallbacks(): array
     {
@@ -39,8 +36,6 @@ class Callbacks
 
     public function get(string $name): Closure
     {
-        $name = $this->mappings->get($name);
-
         if (array_key_exists($name, $this->callbacks)) {
             return $this->callbacks[$name];
         }

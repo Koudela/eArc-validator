@@ -13,69 +13,66 @@ namespace eArc\Validator;
 use eArc\Validator\Collections\Callbacks;
 use eArc\Validator\Collections\Collector;
 use eArc\Validator\Collections\Mappings;
-use eArc\Validator\Collections\Messages;
-use eArc\Validator\Services\Evaluator;
+use eArc\Validator\Exceptions\AssertException;
+use eArc\Validator\Models\Call;
+use eArc\Validator\Models\Result;
+use eArc\Validator\Services\EvaluationService;
 
 abstract class AbstractValidator
 {
-    /** @var int */
-    protected $id;
-    /** @var Callbacks */
-    protected $callbacks;
-    /** @var Messages */
-    protected $messages;
-    /** @var Collector */
-    protected $collector;
-
-    public function __construct(Callbacks $callbacks, Messages $messages, Collector $collector, int $id = null)
-    {
-        $this->callbacks = $callbacks;
-        $this->messages = $messages;
-        $this->collector = $collector;
-        $this->id = $id ?? -1;
-    }
+    public function __construct(
+        protected EvaluationService $evaluationService,
+        protected Collector $collector,
+        protected int $id = -1,
+    ) {}
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function __call($name, $args)
+    /**
+     * @param array<int, mixed> $args
+     */
+    public function __call(string $name, array $args): Validator
     {
-        $nextId = $this->collector->getId();
-        $this->collector->setCall($this->id, $nextId, $name, $args);
+        $nextId = $this->collector->getNextId();
+        $this->collector->setCall(new Call($this->id, $nextId, $name, $args));
 
-        return new Validator($this->callbacks, $this->messages, $this->collector, $nextId);
+        return new Validator(
+            $this->evaluationService,
+            $this->collector,
+            $nextId
+        );
     }
 
-    public function check($value, string $key = null, $throwOnResultIsFalse = false): bool
+    public function check($value, $throwOnNotValid = false): bool
     {
-        return $this->evaluate($value, $key, 0, $throwOnResultIsFalse);
+        return $this->evaluate($value, $throwOnNotValid, 0)->isValid();
     }
 
-    public function validate($value, string $key = null, $throwOnResultIsFalse = false): bool
+    public function validate($value,$throwOnNotValid = false): Result
     {
-        return $this->evaluate($value, $key, 1, $throwOnResultIsFalse);
+        return $this->evaluate($value, $throwOnNotValid, 1);
     }
 
-    public function assert($value, string $key = null, $throwOnResultIsFalse = false): bool
+    public function assert($value, $throwOnNotValid = false): Result
     {
-        return $this->evaluate($value, $key, 2, $throwOnResultIsFalse);
+        return $this->evaluate($value, $throwOnNotValid, 2);
     }
 
-    private function evaluate($value, string $key = null, $verbosity = 1, $throwOnResultIsFalse = false): bool
+    protected function evaluate($value, $throwOnNotValid = false, int $verbosity = 1): Result
     {
-        return (
-            new Evaluator($this, $this->callbacks, $this->collector, $value, $key, $verbosity, $throwOnResultIsFalse)
-        )->getResult();
+        $result = $this->evaluationService->evalCallStack($this->collector, $value, $verbosity);
+
+        if ($throwOnNotValid && !$result->isValid()) {
+            throw new AssertException(var_export($result->getErrorMessages()));
+        }
+
+        return $result;
     }
 
-    public function getErrorMessages(string $prefix = null): array
-    {
-        return $this->collector->getErrorMessages($this->messages, $prefix);
-    }
-
-    abstract public static function getCallbacks(Mappings $mappings): Callbacks;
+    abstract public static function getCallbacks(): Callbacks;
 
     abstract public static function getMappings(): Mappings;
 }

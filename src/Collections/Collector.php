@@ -10,52 +10,37 @@
 
 namespace eArc\Validator\Collections;
 
+use eArc\Validator\Models\Call;
+
 class Collector
 {
-    /** @var int */
-    protected $lastId = 0;
-    /** @var array */
-    protected $callStack = [];
-    /** @var array */
-    protected $errors = [];
+    protected int $lastId = 0;
+    /** @var array<string, Call> */
+    protected array $callStack = [];
 
-    public function getId(): int
+    public function getNextId(): int
     {
         return $this->lastId++;
     }
 
-    public function setCall(int $id, int $nextId, string $name, array $args): void
+    public function setCall(Call $call): void
     {
-        if ($name === 'with' || $name === 'withKey') {
+        if ($call->name === 'with') {
             end($this->callStack);
-            $this->callStack[key($this->callStack)][$name] = $args[0];
+            $this->callStack[key($this->callStack)]->with = $call->args[0];
+        } elseif ($call->name === 'withKey') {
+            end($this->callStack);
+            $this->callStack[key($this->callStack)]->withKey = $call->args[0];
         } else {
-            $this->callStack[':' . $nextId] = ['id' => $id, 'name' => $name, 'args' => $args];
+            $this->callStack[':'.$call->nextId] = $call;
         }
     }
 
+    /**
+     * @return array<string, Call>
+     */
     public function getCallStack(): array
     {
         return $this->callStack;
-    }
-
-    public function setErrors(array $errors, string $key = null): void
-    {
-        if (!$key) {
-            $this->errors[] = $errors;
-        } else {
-            $this->errors[$key] = $errors;
-        }
-    }
-
-    public function getErrorMessages(Messages $messages, string $prefix = null): array
-    {
-        $errorMessages = [];
-
-        foreach ($this->errors as $key => $err) {
-            $errorMessages[$key] = $messages->generateErrorMessages($err, $prefix);
-        }
-
-        return $errorMessages;
     }
 }
