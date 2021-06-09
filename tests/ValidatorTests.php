@@ -52,25 +52,25 @@ class ValidatorTests extends TestCase
         #$validator->regex('/@example\.com$/');
 
         $result = $validator->validate('validator@example.com'); // returns true
-        self::assertTrue($result);
+        self::assertTrue($result->isValid());
         $result = $validator->validate('no-email-address'); // returns false
-        self::assertFalse($result);
+        self::assertFalse($result->isValid());
 //        $result = $validator->validate('example@example.de'); // returns false
-//        self::assertFalse($result);
+//        self::assertFalse($result->isValid());
         $result = $validator->validate('valid\\tor@example.com'); // returns false
-        self::assertFalse($result);
+        self::assertFalse($result->isValid());
 
 
         $validator = (new ValidatorFactory())->build();
         $validator->email()->regex('/@example\.com$/');
 
         $result = $validator->validate('validator@example.com'); // returns true
-        self::assertTrue($result);
+        self::assertTrue($result->isValid());
         $result = $validator->validate('no-email-address'); // returns false
-        self::assertFalse($result);
+        self::assertFalse($result->isValid());
         $result = $validator->validate('example@example.de'); // returns false
-        self::assertFalse($result);
-        $result = $validator->validate('v*lid*tor@example.com'); // returns false
-        self::assertFalse($result);
+        self::assertFalse($result->isValid());
+        $result = $validator->validate('valid\\tor@example.com'); // returns false
+        self::assertFalse($result->isValid());
     }
 }

@@ -32,20 +32,20 @@ class EvaluationService
     protected array $callStack;
     protected int $verbosity;
     protected mixed $value;
-    protected array $errors;
 
     public function evalCallStack(
         Collector $collector,
         mixed $value,
-        $verbosity = 2,
+        int $verbosity = 2,
+        array &$errors = [],
+        bool $isNot = false,
     ): Result
     {
         $this->callStack = $collector->getCallStack();
         $this->value = $value;
         $this->verbosity = $verbosity;
-        $errors = [];
 
-        $result = $this->startRewind($errors, end($this->callStack), false);
+        $result = $this->startRewind($errors, end($this->callStack), $isNot);
 
         return new Result($this->errorMessageGenerator, $result, $errors);
     }
@@ -84,18 +84,16 @@ class EvaluationService
                         $isNot = !$isNot;
                         $bool = true;
                     } else {
-                        $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call->args[0])], $isNot);
+                        $bool = $this->evalEncapsulated($call->args[0], $this->verbosity, $errors, $isNot);
                     }
                     break;
                 case 'WHEN':
-                    $verbosity = $this->verbosity;
-                    $this->verbosity = 0;
-                    $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call->args[0])], $isNot);
-                    $this->verbosity = $verbosity;
+                    $bool = $this->evalEncapsulated($call->args[0], 0 , $errors, $isNot);
+
                     if ($bool) {
-                        $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call->args[1])], $isNot);
+                        $bool = $this->evalEncapsulated($call->args[1], $this->verbosity, $errors, $isNot);
                     } else if (isset($call->args[2])) {
-                        $bool = $this->startRewind($errors, $this->callStack[$this->getKey($call->args[2])], $isNot);
+                        $bool = $this->evalEncapsulated($call->args[2], $this->verbosity, $errors, $isNot);
                     } else {
                         $bool = true;
                     }
@@ -142,7 +140,7 @@ class EvaluationService
         $localErrors = [];
 
         foreach ($args as $arg) {
-            $bool = $this->startRewind($localErrors, $this->callStack[$this->getKey($arg)], $isNot);
+            $bool = $this->evalEncapsulated($arg, $this->verbosity, $localErrors, $isNot);
 
             if ($bool) {
                 return true;
@@ -169,7 +167,7 @@ class EvaluationService
         $returnBool = true;
 
         foreach ($args as $arg) {
-            $bool = $this->startRewind($errors, $this->callStack[$this->getKey($arg)], $isNot);
+            $bool = $this->evalEncapsulated($arg, $this->verbosity, $errors, $isNot);
 
             if (!$bool) {
                 if ($this->verbosity < 2) {
@@ -211,8 +209,16 @@ class EvaluationService
         return $bool;
     }
 
-    private function getKey(Validator $pointer): string
+    protected function evalEncapsulated(Validator $validator, int $verbosity, array &$errors, $isNot): bool
     {
-        return ':'.$pointer->getId();
+        return (new EvaluationService($this->errorMessageGenerator, $this->callbacks, $this->mappings))
+            ->evalCallStack(
+                $validator->getCollector(),
+                $this->value,
+                $verbosity,
+                $errors,
+                $isNot
+            )->isValid()
+        ;
     }
 }

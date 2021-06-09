@@ -14,7 +14,6 @@ use eArc\Validator\Collections\Callbacks;
 use eArc\Validator\Collections\Collector;
 use eArc\Validator\Collections\Mappings;
 use eArc\Validator\Exceptions\AssertException;
-use eArc\Validator\Models\Call;
 use eArc\Validator\Models\Result;
 use eArc\Validator\Services\EvaluationService;
 
@@ -31,13 +30,17 @@ abstract class AbstractValidator
         return $this->id;
     }
 
+    public function getCollector(): Collector
+    {
+        return $this->collector;
+    }
+
     /**
      * @param array<int, mixed> $args
      */
     public function __call(string $name, array $args): Validator
     {
-        $nextId = $this->collector->getNextId();
-        $this->collector->setCall(new Call($this->id, $nextId, $name, $args));
+        $nextId = $this->collector->setCall($this->getId(), $name, $args);
 
         return new Validator(
             $this->evaluationService,

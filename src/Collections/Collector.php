@@ -14,26 +14,25 @@ use eArc\Validator\Models\Call;
 
 class Collector
 {
-    protected int $lastId = 0;
+    protected int $lastId = -1;
     /** @var array<string, Call> */
     protected array $callStack = [];
 
-    public function getNextId(): int
+    public function setCall(int $validatorId, string $callName, array $callArgs): int
     {
-        return $this->lastId++;
-    }
+        $nextId = ++$this->lastId;
 
-    public function setCall(Call $call): void
-    {
-        if ($call->name === 'with') {
+        if ($callName === 'with') {
             end($this->callStack);
-            $this->callStack[key($this->callStack)]->with = $call->args[0];
-        } elseif ($call->name === 'withKey') {
+            $this->callStack[key($this->callStack)]->with = $callArgs[0];
+        } elseif ($callName === 'withKey') {
             end($this->callStack);
-            $this->callStack[key($this->callStack)]->withKey = $call->args[0];
+            $this->callStack[key($this->callStack)]->withKey = $callArgs[0];
         } else {
-            $this->callStack[':'.$call->nextId] = $call;
+            $this->callStack[':'.$nextId] = new Call($validatorId, $nextId, $callName, $callArgs);
         }
+
+        return $nextId;
     }
 
     /**

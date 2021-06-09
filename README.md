@@ -35,10 +35,8 @@ use eArc\Validator\ValidatorFactory;
 $validator = (new ValidatorFactory())->build();
 $validator->email();
 
-$validator->validate('validator@example.com'); // returns true
-$validator->validate('no-email-address'); // returns false
-
-echo implode(', ', $validator->getLastErrorMessages()); // echos 'has to be a valid email address'
+$validator->check('validator@example.com'); // returns true
+$validator->check('no-email-address'); // returns false
 ```
 
 ```php
@@ -48,14 +46,18 @@ $validator = (new ValidatorFactory())->build();
 $validator->email();
 $validator->regex('/@example\.com$/');
 
-$validator->validate('validator@example.com'); // returns true
-$validator->validate('validator@example.de'); // returns false
-$validator->validate('valid\\tor@example.de'); // returns false
-
-echo implode(', ', $validator->getLastErrorMessages()); // echos 'has to be a valid email address'
+$validator->check('validator@example.com'); // returns true
+$validator->check('validator@example.de'); // returns false
+$validator->check('valid\\tor@example.de'); // returns false
 ```
+
 
 ## releases
 
 ### release 0.0
 - first official release
+- PHP ^8.0
+- is coming soon (code base <= release candidate status)
+- TODO:
+  - Documentation
+  - Tests
