@@ -1,6 +1,6 @@
 {
   "name": "earc/validator",
-  "description": "eArc - the explicit architecture framework - validator",
+  "description": "eArc - the explicit architecture framework - validation component",
   "type": "library",
   "license": "MIT",
   "version": "dev-0.0",

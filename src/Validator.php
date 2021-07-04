@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
+ * validation component
  *
  * @package earc/validator
- * @link https://github.com/Koudela/earc-validator/
+ * @link https://github.com/Koudela/eArc-validator/
  * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
@@ -15,27 +16,27 @@ use eArc\Validator\Collections\Mappings;
 
 /**
  * syntax methods:
- * @method Validator NOT(Validator $validator = null)
+ * @method Validator NOT(?Validator $validator = null)
+ * @method Validator XOR(Validator ...$validators)
  * @method Validator OR(Validator ...$validators)
  * @method Validator AND(Validator ...$validators)
- * @method Validator WHEN(Validator $validator, Validator $validator, ?Validator $validator)
+ * @method Validator WHEN(Validator $validator, Validator $validator, ?Validator $validator = null)
  * @method Validator NoneOf(Validator ...$validators)
  * @method Validator AllOf(Validator ...$validators)
  * @method Validator OneOf(Validator ...$validators)
  *
+ * TODO: still functional?
  * extended syntax methods:
  * @method Validator with(string $message)
  * @method Validator withKey(string $messageKey)
  *
- * validation methods:
+ * atomic validation methods:
  * @method Validator equal($item)
  * @method Validator notEqual($item)
  * @method Validator identical($item)
  * @method Validator notIdentical($item)
  * @method Validator max(int $max)
  * @method Validator min(int $min)
- * @method Validator maxLength(string $item)
- * @method Validator minLength(string $item)
  * @method Validator smaller(int $max)
  * @method Validator greater(int $min)
  * @method Validator email()
@@ -58,9 +59,9 @@ use eArc\Validator\Collections\Mappings;
  * @method Validator type(string $type)
  * @method Validator checked()
  * @method Validator unchecked()
- *
- * extended validation methods:
  * @method Validator regex(string $regex)
+ *
+ * extended atomic validation methods:
  * @method Validator callback(callable $callback)
  */
 class Validator extends AbstractValidator

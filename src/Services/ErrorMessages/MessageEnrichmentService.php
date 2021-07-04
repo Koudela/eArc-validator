@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
+ * validation component
  *
  * @package earc/validator
- * @link https://github.com/Koudela/earc-validator/
+ * @link https://github.com/Koudela/eArc-validator/
  * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
@@ -42,7 +43,7 @@ abstract class MessageEnrichmentService
             return (string) $arg;
         }
 
-        return var_export($arg);
+        return var_export($arg, true);
     }
 
     protected function argumentsToString(array $args): string
@@ -50,7 +51,7 @@ abstract class MessageEnrichmentService
         $transformedArgs = [];
 
         foreach($args as $arg) {
-            $transformedArgs = $this->argumentToString($arg);
+            $transformedArgs[] = $this->argumentToString($arg);
         }
 
         return '[' . implode(', ', $transformedArgs) . ']';

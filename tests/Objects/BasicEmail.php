@@ -9,19 +9,14 @@
  * @license http://opensource.org/licenses/MIT MIT License
  */
 
-namespace eArc\Validator\Models;
+namespace earc\ValidatorTests\Objects;
 
-class EvaluatedCall
+use eArc\Validator\Attributes\Validation;
+
+class BasicEmail
 {
-    /**
-     * @param array<int, mixed> $args
-     */
     public function __construct(
-        public string $name,
-        public array $args,
-        public string|null $with = null,
-        public string|null $withKey = null,
-        public bool $isNot = false,
-        public array|null $localErrors = null,
+        #[Validation(['AllOf' => [['email' => null, 'notEmpty'], ['email', 'notEmpty' => null]]])]
+        protected string $email
     ) {}
 }

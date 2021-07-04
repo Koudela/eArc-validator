@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
+ * validation component
  *
  * @package earc/validator
- * @link https://github.com/Koudela/earc-validator/
+ * @link https://github.com/Koudela/eArc-validator/
  * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
@@ -18,9 +19,10 @@ class Collector
     /** @var array<string, Call> */
     protected array $callStack = [];
 
-    public function setCall(int $validatorId, string $callName, array $callArgs): int
+    public function setCall(int $callId, string $callName, array $callArgs): int
     {
-        $nextId = ++$this->lastId;
+        $this->lastId += 2;
+        $nextId = $this->lastId;
 
         if ($callName === 'with') {
             end($this->callStack);
@@ -29,7 +31,7 @@ class Collector
             end($this->callStack);
             $this->callStack[key($this->callStack)]->withKey = $callArgs[0];
         } else {
-            $this->callStack[':'.$nextId] = new Call($validatorId, $nextId, $callName, $callArgs);
+            $this->callStack[':'.$nextId] = new Call($callId, $nextId, $callName, $callArgs);
         }
 
         return $nextId;

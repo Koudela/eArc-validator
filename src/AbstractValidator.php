@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
+ * validation component
  *
  * @package earc/validator
- * @link https://github.com/Koudela/earc-validator/
+ * @link https://github.com/Koudela/eArc-validator/
  * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
@@ -19,15 +20,35 @@ use eArc\Validator\Services\EvaluationService;
 
 abstract class AbstractValidator
 {
+    const SYNTAX_METHODS = [
+        'NOT' => true,
+        'XOR' => true,
+        'OR' => true,
+        'AND' => true,
+        'WHEN' => true,
+        'NoneOf' => true,
+        'OneOf' => true,
+        'AllOf' => true,
+    ];
+
+    protected int $initialId;
+
     public function __construct(
         protected EvaluationService $evaluationService,
         protected Collector $collector,
         protected int $id = -1,
-    ) {}
+    ) {
+        $this->initialId = $id;
+    }
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getInitialId(): int
+    {
+        return $this->initialId;
     }
 
     public function getCollector(): Collector
@@ -42,6 +63,8 @@ abstract class AbstractValidator
     {
         $nextId = $this->collector->setCall($this->getId(), $name, $args);
 
+        $this->id = $nextId-1;
+
         return new Validator(
             $this->evaluationService,
             $this->collector,
@@ -49,27 +72,27 @@ abstract class AbstractValidator
         );
     }
 
-    public function check($value, $throwOnNotValid = false): bool
+    public function check(mixed $value, bool $throwOnNotValid = false): bool
     {
         return $this->evaluate($value, $throwOnNotValid, 0)->isValid();
     }
 
-    public function validate($value,$throwOnNotValid = false): Result
+    public function validate(mixed $value, bool $throwOnNotValid = false): Result
     {
         return $this->evaluate($value, $throwOnNotValid, 1);
     }
 
-    public function assert($value, $throwOnNotValid = false): Result
+    public function assert(mixed $value, bool $throwOnNotValid = false): Result
     {
         return $this->evaluate($value, $throwOnNotValid, 2);
     }
 
-    protected function evaluate($value, $throwOnNotValid = false, int $verbosity = 1): Result
+    protected function evaluate(mixed $value, bool $throwOnNotValid, int $verbosity): Result
     {
-        $result = $this->evaluationService->evalCallStack($this->collector, $value, $verbosity);
+        $result = $this->evaluationService->evalCallStack($this, $value, $verbosity);
 
         if ($throwOnNotValid && !$result->isValid()) {
-            throw new AssertException(var_export($result->getErrorMessages()));
+            throw new AssertException($result);
         }
 
         return $result;

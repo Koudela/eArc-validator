@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 /**
  * e-Arc Framework - the explicit Architecture Framework
+ * validation component
  *
  * @package earc/validator
- * @link https://github.com/Koudela/earc-validator/
+ * @link https://github.com/Koudela/eArc-validator/
  * @copyright Copyright (c) 2018-2021 Thomas Koudela
  * @license http://opensource.org/licenses/MIT MIT License
  */
@@ -14,7 +15,7 @@ use eArc\Validator\Services\ErrorMessages\ErrorMessageGenerator;
 
 class Result
 {
-    protected array|null $generatedMessages;
+    protected array|null $generatedMessages = null;
     protected array $generatedMessagesWithPrefix = [];
 
     public function __construct(

@@ -11,17 +11,20 @@
 
 namespace eArc\Validator\Models;
 
-class EvaluatedCall
+class Results
 {
     /**
-     * @param array<int, mixed> $args
+     * @param array<string, Result> $results
      */
-    public function __construct(
-        public string $name,
-        public array $args,
-        public string|null $with = null,
-        public string|null $withKey = null,
-        public bool $isNot = false,
-        public array|null $localErrors = null,
-    ) {}
+    public function __construct(protected array $results, protected bool $isValid) {}
+
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    public function isValid(): bool
+    {
+        return $this->isValid;
+    }
 }
